@@ -1,3 +1,7 @@
+/* 
+    @desc Trigger function to update colecao table when a new cena in 
+    inserted.
+*/
 CREATE OR REPLACE FUNCTION AtualizaColecao()
 RETURNS trigger
 AS
@@ -6,13 +10,13 @@ DECLARE
     query text;
     newdate DATERANGE DEFAULT NULL;
     gunion GEOMETRY DEFAULT NULL;
-
-    col colecao%ROWTYPE; -- ou: RECORD
+    col colecao%ROWTYPE;
 BEGIN
     query := 'UPDATE colecao';
+    -- INSERT case --
     IF TG_OP = 'INSERT' THEN
         SELECT * INTO col FROM colecao WHERE nome = NEW.nome_colecao;
-        RAISE NOTICE 'col: %', col;
+        
         -- Does the period contain passagem? --
         IF NOT col.periodo @> NEW.passagem THEN
             IF NEW.passagem < lower(col.periodo) THEN
@@ -21,26 +25,26 @@ BEGIN
                 newdate := format('[%s, %s)', lower(col.periodo), NEW.passagem);
             END IF;
             query := query || format(' SET periodo = ''%s''', newdate);
-            RAISE NOTICE 'newdate: %', newdate;
-            RAISE NOTICE 'query 1: %', query;
         END IF;
+
         -- Does the cobetura contains footprint? --
         IF NOT ST_Contains(col.cobertura, NEW.footprint) THEN
             gunion := ST_Union(col.cobertura, NEW.footprint);
-            query := query || format(', cobertura = ''%s'' ', ST_AsText(gunion));
+            query := query || format(', cobertura = ST_GeometryFromText(''%s'', 4326)', ST_AsText(gunion));
         END IF;
         query := query || format(' WHERE nome = ''%s''; ', NEW.nome_colecao);
-        RAISE NOTICE 'query 2: %', query;
+        
+        -- Are there any value to update?
         IF newdate IS NOT NULL OR gunion IS NOT NULL THEN
-            RAISE NOTICE 'entrou aqui';
             EXECUTE query;
         END IF;
+    
     END IF;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trigger_atualiza_colecao3
+CREATE TRIGGER trigger_atualiza_colecao
   AFTER INSERT OR UPDATE
   ON cena
   FOR EACH ROW EXECUTE PROCEDURE AtualizaColecao();

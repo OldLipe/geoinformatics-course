@@ -1,3 +1,7 @@
+/* 
+    @desc Trigger function to update timeline table when a new cena in 
+    inserted.
+*/
 CREATE OR REPLACE FUNCTION AtualizaTimeline()
 RETURNS trigger
 AS
@@ -15,7 +19,6 @@ BEGIN
             query := query || format(
                 ' VALUES (''%s'', ''%s'');', NEW.colecao_id, NEW.passagem
             );
-            RAISE NOTICE 'query: %', query;
             EXECUTE query;
         END IF;
     END IF;
