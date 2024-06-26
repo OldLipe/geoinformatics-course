@@ -60,28 +60,34 @@ $$
             CheckLonLat(ST_X(p1), ST_Y(p1));
             CheckLonLat(ST_X(p2), ST_Y(p2));
         END;
-        -- Block to compute Haversine distance --
+        -- Block to get coordinates --
         BEGIN
             p1x := ST_X(p1);
             p2x := ST_X(p2);
             p1y := ST_Y(p1);
             p2y := ST_Y(p2);
-        
+        END;
+        -- Block to compute Haversine distance --
+        BEGIN
             -- Compute numerator --
             dist := 1 - cos(p2y - p1y) + cos(p1y) * cos(p2y) * (1 - cos(p2x - p1x));
-            -- Compute .... --
+            -- Compute denomitor --
             dist := 2* r * asin(sqrt(dist / 2));
         END;
-
+        -- Return distance --
         RETURN dist;
     END;
 $$
 LANGUAGE plpgsql;
 
+-- --
 SELECT DistanciaHaversine(
     ST_GeometryFromText('POINT( 1 1)', 4326),
     ST_GeometryFromText('POINT( 2 2)', 4326)
 );
+
+-- TODO: computar a distancia entre Chuí e Ailã --
+
 
 CREATE OR REPLACE FUNCTION DistanciaDDL(p1 GEOMETRY, s2 GEOMETRY)
 RETURNS NUMERIC
@@ -414,10 +420,6 @@ INSERT INTO timeline (colecao_id, instante)
            ('c1ed7736-ee29-4709-86e3-7e8d2dfc13e4', '2021-12-18'),
            ('c1ed7736-ee29-4709-86e3-7e8d2dfc13e4', '2022-12-18')
            ('869783c7-c0b7-4cd9-b141-83a8a0e3ec04', '2023-01-01');
-
-INSERT INTO timeline (colecao_id, instante)
-    VALUES ('c1ed7736-ee29-4709-86e3-7e8d2dfc13e4', '2021-12-18'),
-           ('c1ed7736-ee29-4709-86e3-7e8d2dfc13e4', '2022-12-18');
 
 -- --
 
