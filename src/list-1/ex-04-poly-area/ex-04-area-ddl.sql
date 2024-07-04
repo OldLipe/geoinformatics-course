@@ -55,7 +55,7 @@ $$
 LANGUAGE plpgsql;
 
 /* 
-    @desc Function to cauculates polygon area.
+    @desc Function to calculates polygon area.
     @param p1 A GEOMETRY corresponding to a Polygon.
     @return A NUMERIC value that corresponds to the polygon area.
 */
